@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Zarządca Paragonów</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-glow: rgba(79, 70, 229, 0.18);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --accent-orange: #d97706;
+            --accent-purple: #7c3aed;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.05) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            padding-top: var(--safe-top);
+        }
+
+        /* --- Header Navigation --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            flex-shrink: 0;
+        }
+
+        .logo-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+        }
+
+        .nav-tabs-desktop {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid var(--card-border);
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:active {
+            transform: scale(0.97);
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            font-weight: 700;
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .account-badge {
+            background: #f1f5f9;
+            border: 1px solid var(--card-border);
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+        }
+
+        .account-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.75rem;
+            color: #fff;
+        }
+
+        .btn-logout {
+            background: #fee2e2;
+            color: var(--accent-red);
+            border: 1px solid #fca5a5;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-logout:active {
+            background: var(--accent-red);
+            color: #fff;
+            transform: scale(0.95);
+        }
+
+        /* --- Bottom Mobile Navigation Bar --- */
+        .bottom-nav-mobile {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--card-border);
+            padding: 8px 12px calc(8px + var(--safe-bottom)) 12px;
+            z-index: 999;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 16px;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            flex: 1;
+            max-width: 100px;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 1.35rem;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .bottom-nav-item:active {
+            transform: scale(0.92);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .bottom-nav-item.active .icon {
+            transform: scale(1.15);
+        }
+
+        .bottom-nav-item.highlight-add {
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            color: white;
+            border-radius: 24px;
+            padding: 8px 12px;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transform: translateY(-4px);
+        }
+
+        .bottom-nav-item.highlight-add.active {
+            color: white;
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        /* --- Main Layout --- */
+        main {
+            flex: 1;
+            max-width: 950px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.75rem 1.25rem 2.5rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        /* --- SCREEN 0: PASSWORD LOGIN SCREEN --- */
+        #password-login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 2.5rem 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 440px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .login-card h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .password-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+
+        .password-input-group input {
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            font-size: 16px; /* 16px prevents iOS Safari auto-zoom */
+            font-weight: 600;
+            width: 100%;
+            -webkit-appearance: none;
+        }
+
+        .password-input-group input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+            background: #ffffff;
+        }
+
+        /* --- SCREEN 1: ACCOUNT SELECTION --- */
+        #account-select-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .select-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 2.5rem 1.75rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .select-card h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+            color: var(--text-main);
+        }
+
+        .select-card p {
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            font-size: 0.9rem;
+        }
+
+        .account-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .account-btn {
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .account-btn:active {
+            background: #e0e7ff;
+            border-color: var(--primary);
+            transform: scale(0.95);
+        }
+
+        .account-btn .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .avatar-T { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .avatar-O { background: linear-gradient(135deg, #ec4899, #be185d); }
+        .avatar-K { background: linear-gradient(135deg, #10b981, #047857); }
+
+        .account-btn span {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        /* --- DASHBOARD TAB --- */
+        #dashboard-view {
+            display: none;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .dash-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .dash-summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 1.15rem 1.25rem;
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dash-summary-card .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .dash-summary-card .val {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .settlement-section-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        .settlement-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .settlement-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .settlement-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .settlement-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .settlement-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .settlement-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .settlement-box {
+            border-radius: var(--radius-md);
+            padding: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .box-pay {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        .box-receive {
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+        }
+
+        .box-even {
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+        }
+
+        .settlement-amount {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .settlement-explanation {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+
+        /* --- ADD RECEIPT TAB --- */
+        #add-view {
+            display: none;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .upload-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+
+        .upload-action-btn {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--radius-md);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .upload-action-btn:active {
+            background: #e0e7ff;
+            border-color: var(--primary);
+            transform: scale(0.97);
+        }
+
+        .upload-action-btn .btn-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+
+        .upload-action-btn .btn-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .upload-action-btn .btn-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        #file-input-camera, #file-input-gallery {
+            display: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px var(--primary-glow);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
+            transition: all 0.2s ease;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-success:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:active {
+            background: #e2e8f0;
+            transform: scale(0.95);
+        }
+
+        /* Verification Section */
+        #verification-section {
+            display: none;
+            margin-top: 1.5rem;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .receipt-summary-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 16px; /* 16px prevents iOS Safari auto-zoom */
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .form-group input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        /* Mobile touch-friendly items list */
+        .items-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item-row-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .item-row-card:active {
+            background: #f8fafc;
+        }
+
+        .item-row-card.checked {
+            border-color: #cbd5e1;
+            background: #ffffff;
+        }
+
+        .item-row-card.unchecked {
+            opacity: 0.55;
+            background: #f8fafc;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-checkbox-custom {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .item-qty {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .item-price {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--accent-green);
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .total-bar {
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            border-radius: var(--radius-md);
+            padding: 1.15rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .total-amount-display {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            white-space: nowrap;
+        }
+
+        /* --- HISTORY TAB --- */
+        #history-view {
+            display: none;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .filter-bar-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 4px;
+        }
+        .filter-bar-wrapper::-webkit-scrollbar { display: none; }
+
+        .filter-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:active {
+            transform: scale(0.95);
+        }
+
+        .filter-btn.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            font-weight: 700;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .history-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .history-card:active {
+            border-color: var(--primary);
+            transform: scale(0.98);
+        }
+
+        .history-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .history-store {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        .history-date {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .history-price {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            white-space: nowrap;
+        }
+
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            padding-top: 8px;
+        }
+
+        /* --- MODAL DETAILS (BOTTOM SHEET ON MOBILE) --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-drag-handle {
+            display: none;
+            width: 38px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 4px;
+            margin: -6px auto 8px auto;
+        }
+
+        .receipt-photo-container {
+            width: 100%;
+            max-height: 280px;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .receipt-photo-container img {
+            max-width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+        }
+
+        /* Loader Spinner */
+        .loader-spinner {
+            display: none;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- RESPONSIVE MEDIA QUERIES (MOBILE FIRST) --- */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: calc(75px + var(--safe-bottom));
+            }
+
+            header {
+                padding: 0.75rem 1rem;
+            }
+
+            .logo-title {
+                display: inline-block;
+                font-size: 1rem;
+            }
+
+            .nav-tabs-desktop {
+                display: none !important;
+            }
+
+            .bottom-nav-mobile {
+                display: flex !important;
+            }
+
+            main {
+                padding: 1rem 0.85rem 2rem 0.85rem;
+                gap: 1.25rem;
+            }
+
+            .dash-summary-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .settlement-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .settlement-card {
+                padding: 1.25rem;
+            }
+
+            .glass-card {
+                padding: 1.25rem;
+                border-radius: var(--radius-md);
+            }
+
+            .receipt-summary-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-overlay {
+                padding: 0;
+                align-items: flex-end;
+            }
+
+            .modal-content {
+                border-radius: 24px 24px 0 0;
+                max-height: 88vh;
+                max-width: 100%;
+                padding: 1.25rem 1.25rem calc(1.5rem + var(--safe-bottom)) 1.25rem;
+                animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .modal-drag-handle {
+                display: block;
+            }
+
+            @keyframes slideUp {
+                from { transform: translateY(100%); }
+                to { transform: translateY(0); }
+            }
+
+            .total-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .total-amount-display {
+                font-size: 1.4rem;
+            }
+
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">🧾</div>
+            <span class="logo-title">Zarządca</span>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <div class="nav-tabs-desktop" id="nav-tabs-desktop" style="display: none;">
+            <button class="tab-btn active" id="tab-dash-dt" onclick="switchTab('dash')">📊 Bilans</button>
+            <button class="tab-btn" id="tab-add-dt" onclick="switchTab('add')">➕ Dodaj Paragon</button>
+            <button class="tab-btn" id="tab-history-dt" onclick="switchTab('history')">📜 Historia</button>
+        </div>
+
+        <!-- User Info & Logout -->
+        <div class="user-nav" id="user-nav" style="display: none;">
+            <div class="account-badge">
+                <div class="account-avatar" id="nav-avatar">T</div>
+                <span id="nav-account-name">Konto T</span>
+            </div>
+            <button class="btn-logout" onclick="logoutApp()">Wyloguj</button>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- SCREEN 0: PASSWORD LOGIN SCREEN -->
+        <div id="password-login-screen">
+            <div class="login-card">
+                <div style="font-size: 2.75rem; line-height: 1;">🔒</div>
+                <h2>Dostęp zabezpieczony</h2>
+                <p>Wpisz hasło dostępowe do panelu rozliczeń domowych</p>
+
+                <div class="password-input-group">
+                    <input type="password" id="app-password-input" placeholder="Wpisz hasło..." onkeydown="if(event.key==='Enter') submitPasswordLogin()">
+                </div>
+
+                <button class="btn-primary" onclick="submitPasswordLogin()">
+                    🔑 Zaloguj się
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 1: ACCOUNT SELECTION -->
+        <div id="account-select-screen">
+            <div class="select-card">
+                <h2>Wybierz swój profil</h2>
+                <p>Wybierz konto, aby zarządzać wydatkami</p>
+
+                <div class="account-options">
+                    <button class="account-btn" onclick="selectAccount('T')">
+                        <div class="avatar avatar-T">T</div>
+                        <span>Konto T</span>
+                    </button>
+                    <button class="account-btn" onclick="selectAccount('O')">
+                        <div class="avatar avatar-O">O</div>
+                        <span>Konto O</span>
+                    </button>
+                    <button class="account-btn" onclick="selectAccount('K')">
+                        <div class="avatar avatar-K">K</div>
+                        <span>Konto K</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 1: DASHBOARD (BILANS WSPÓŁLOKATORÓW) -->
+        <div id="dashboard-view">
+            
+            <div class="dash-summary-grid">
+                <div class="dash-summary-card">
+                    <div class="label">Suma wszystkich wydatków</div>
+                    <div class="val" id="dash-grand-total">0.00 PLN</div>
+                </div>
+                <div class="dash-summary-card">
+                    <div class="label">Twoje zakupy (opłacone z góry)</div>
+                    <div class="val" style="color: var(--primary);" id="dash-my-total">0.00 PLN</div>
+                </div>
+                <div class="dash-summary-card">
+                    <div class="label">Twój udział (1/3)</div>
+                    <div class="val" style="color: var(--accent-purple);" id="dash-my-share">0.00 PLN</div>
+                </div>
+            </div>
+
+            <div class="settlement-section-title">
+                <span>⚖️</span> Stan rozliczeń z pozostałymi
+            </div>
+
+            <div class="settlement-grid" id="settlement-cards-container"></div>
+        </div>
+
+        <!-- TAB 2: ADD RECEIPT VIEW -->
+        <div id="add-view" class="glass-card">
+            <div style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <span>📸</span> Dodaj nowy paragon (Gemini AI)
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                Zrób zdjęcie aparatem lub załaduj plik z galerii telefonu.
+            </p>
+
+            <!-- Dual Action Upload on Mobile/Desktop -->
+            <div class="upload-actions-grid">
+                <div class="upload-action-btn" onclick="document.getElementById('file-input-camera').click()">
+                    <div class="btn-icon">📷</div>
+                    <div class="btn-title">Aparat</div>
+                    <div class="btn-subtitle">Zrób zdjęcie</div>
+                    <input type="file" id="file-input-camera" accept="image/*" capture="environment" onchange="handleFileSelect(event)">
+                </div>
+
+                <div class="upload-action-btn" onclick="document.getElementById('file-input-gallery').click()">
+                    <div class="btn-icon">🖼️</div>
+                    <div class="btn-title">Galeria / Plik</div>
+                    <div class="btn-subtitle">Wybierz z telefonu</div>
+                    <input type="file" id="file-input-gallery" accept="image/*" onchange="handleFileSelect(event)">
+                </div>
+            </div>
+
+            <!-- Preview bar after file select -->
+            <div id="file-preview-bar" style="display: none; margin-top: 1.25rem; flex-direction: column; gap: 10px; background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                        <span style="font-size: 1.2rem;">📎</span>
+                        <span id="selected-file-name" style="font-weight: 700; font-size: 0.9rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">wybrane_zdjecie.jpg</span>
+                    </div>
+                    <button class="btn-secondary" onclick="resetFileSelection()">Zmień</button>
+                </div>
+
+                <button class="btn-primary" id="btn-analyze" onclick="analyzeReceipt()">
+                    <span>🤖 Wyciągnij produkty (AI)</span>
+                    <div class="loader-spinner" id="analyze-loader"></div>
+                </button>
+            </div>
+
+            <!-- Verification Section -->
+            <div id="verification-section">
+                <hr style="border: none; border-top: 1px solid var(--card-border); margin: 0.5rem 0;">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800;">Pozycje odczytane przez AI:</h3>
+                    <button class="btn-secondary" onclick="toggleAllItems()">Zaznacz/odznacz wszystkie</button>
+                </div>
+
+                <div class="receipt-summary-inputs">
+                    <div class="form-group">
+                        <label>Nazwa Sklepu</label>
+                        <input type="text" id="store-name-input" value="" placeholder="np. Biedronka, Lidl">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Zakupu</label>
+                        <input type="text" id="purchase-date-input" value="" placeholder="YYYY-MM-DD">
+                    </div>
+                </div>
+
+                <!-- Interactive Mobile Card List -->
+                <div class="items-list-container" id="items-card-list"></div>
+
+                <div class="total-bar">
+                    <div>
+                        <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">SUMA ZAZNACZONYCH POZYCJI (DZIELONA NA 3)</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="selected-count-label">Zaznaczono 0 produktów</div>
+                    </div>
+                    <div class="total-amount-display" id="calculated-total-display">0.00 PLN</div>
+                </div>
+
+                <button class="btn-success" id="btn-save-final" onclick="saveFinalReceipt()">
+                    💾 Zapisz wydatek w bazie
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 3: HISTORY VIEW -->
+        <div id="history-view">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 800;">Historia Paragonów</h2>
+                        <p style="color: var(--text-muted); font-size: 0.82rem;">Filtruj według osoby, która zapłaciła</p>
+                    </div>
+
+                    <div class="filter-bar-wrapper">
+                        <div class="filter-bar">
+                            <button class="filter-btn active" id="filter-ALL" onclick="setHistoryFilter('ALL')">Wszyscy</button>
+                            <button class="filter-btn" id="filter-T" onclick="setHistoryFilter('T')">Konto T</button>
+                            <button class="filter-btn" id="filter-O" onclick="setHistoryFilter('O')">Konto O</button>
+                            <button class="filter-btn" id="filter-K" onclick="setHistoryFilter('K')">Konto K</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-grid" id="history-cards-container"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar on Mobile -->
+    <nav class="bottom-nav-mobile" id="bottom-nav-mobile" style="display: none;">
+        <button class="bottom-nav-item active" id="tab-dash-mb" onclick="switchTab('dash')">
+            <span class="icon">📊</span>
+            <span>Bilans</span>
+        </button>
+        <button class="bottom-nav-item highlight-add" id="tab-add-mb" onclick="switchTab('add')">
+            <span class="icon">➕</span>
+            <span>Dodaj</span>
+        </button>
+        <button class="bottom-nav-item" id="tab-history-mb" onclick="switchTab('history')">
+            <span class="icon">📜</span>
+            <span>Historia</span>
+        </button>
+    </nav>
+
+    <!-- MODAL DETAILS (Bottom Sheet on Mobile) -->
+    <div class="modal-overlay" id="detail-modal" onclick="if(event.target===this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-drag-handle"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem;">
+                <div>
+                    <h3 id="modal-store-name" style="font-size: 1.15rem; font-weight: 800;">Nazwa Sklepu</h3>
+                    <p id="modal-date-info" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Data: --</p>
+                </div>
+                <button style="background:#f1f5f9; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="receipt-photo-container" id="modal-photo-container">
+                <img id="modal-photo" src="" alt="Zdjęcie paragonu">
+            </div>
+
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.25rem;">Zaznaczone pozycje:</h4>
+            
+            <div class="items-list-container" id="modal-items-list"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--card-border); padding-top: 0.75rem;">
+                <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted);">SUMA CAŁKOWITA:</span>
+                <span id="modal-total-cost" style="font-size: 1.35rem; font-weight: 800; color: var(--accent-green);">0.00 PLN</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_PREFIX = "";
+        const COOKIE_NAME = "user_account";
+        let currentExtractedData = null;
+        let selectedFile = null;
+        let activeHistoryFilter = "ALL";
+
+        function setCookie(name, value, days = 365) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            document.cookie = name + '=; Max-Age=-99999999; path=/;';
+        }
+
+        // --- PASSWORD AUTHENTICATION ---
+        async function submitPasswordLogin() {
+            const passwordInput = document.getElementById("app-password-input").value;
+            if (!passwordInput) {
+                alert("Wpisz hasło dostępu!");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_PREFIX}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: passwordInput })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ detail: "Błędne hasło" }));
+                    throw new Error(err.detail || "Błędne hasło");
+                }
+
+                initApp();
+            } catch (err) {
+                alert("❌ " + err.message);
+            }
+        }
+
+        async function logoutApp() {
+            try {
+                await fetch(`${API_PREFIX}/logout`, { method: "POST" });
+            } catch (e) {}
+            eraseCookie(COOKIE_NAME);
+            initApp();
+        }
+
+        function selectAccount(acc) {
+            setCookie(COOKIE_NAME, acc);
+            initApp();
+        }
+
+        function switchTab(tabName) {
+            const dashView = document.getElementById("dashboard-view");
+            const addView = document.getElementById("add-view");
+            const historyView = document.getElementById("history-view");
+
+            const tabDashDt = document.getElementById("tab-dash-dt");
+            const tabAddDt = document.getElementById("tab-add-dt");
+            const tabHistDt = document.getElementById("tab-history-dt");
+
+            const tabDashMb = document.getElementById("tab-dash-mb");
+            const tabAddMb = document.getElementById("tab-add-mb");
+            const tabHistMb = document.getElementById("tab-history-mb");
+
+            dashView.style.display = "none";
+            addView.style.display = "none";
+            historyView.style.display = "none";
+
+            [tabDashDt, tabAddDt, tabHistDt, tabDashMb, tabAddMb, tabHistMb].forEach(el => {
+                if (el) el.classList.remove("active");
+            });
+
+            if (tabName === 'dash') {
+                dashView.style.display = "flex";
+                if (tabDashDt) tabDashDt.classList.add("active");
+                if (tabDashMb) tabDashMb.classList.add("active");
+                loadDashboardSummary();
+            } else if (tabName === 'add') {
+                addView.style.display = "block";
+                if (tabAddDt) tabAddDt.classList.add("active");
+                if (tabAddMb) tabAddMb.classList.add("active");
+            } else if (tabName === 'history') {
+                historyView.style.display = "flex";
+                if (tabHistDt) tabHistDt.classList.add("active");
+                if (tabHistMb) tabHistMb.classList.add("active");
+                loadHistory();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function initApp() {
+            const passScreen = document.getElementById("password-login-screen");
+            const selectScreen = document.getElementById("account-select-screen");
+            const navTabsDesktop = document.getElementById("nav-tabs-desktop");
+            const bottomNavMobile = document.getElementById("bottom-nav-mobile");
+            const userNav = document.getElementById("user-nav");
+            const dashView = document.getElementById("dashboard-view");
+            const addView = document.getElementById("add-view");
+            const historyView = document.getElementById("history-view");
+
+            try {
+                const res = await fetch(`${API_PREFIX}/check-auth`);
+                if (!res.ok) throw new Error("Brak autoryzacji");
+
+                passScreen.style.display = "none";
+
+                const currentAccount = getCookie(COOKIE_NAME);
+                if (currentAccount) {
+                    selectScreen.style.display = "none";
+                    navTabsDesktop.style.display = "flex";
+                    bottomNavMobile.style.display = "flex";
+                    userNav.style.display = "flex";
+
+                    document.getElementById("nav-account-name").innerText = `Konto ${currentAccount}`;
+                    document.getElementById("nav-avatar").innerText = currentAccount;
+
+                    switchTab('dash');
+                } else {
+                    selectScreen.style.display = "flex";
+                    navTabsDesktop.style.display = "none";
+                    bottomNavMobile.style.display = "none";
+                    userNav.style.display = "none";
+                    dashView.style.display = "none";
+                    addView.style.display = "none";
+                    historyView.style.display = "none";
+                }
+
+            } catch (err) {
+                passScreen.style.display = "flex";
+                selectScreen.style.display = "none";
+                navTabsDesktop.style.display = "none";
+                bottomNavMobile.style.display = "none";
+                userNav.style.display = "none";
+                dashView.style.display = "none";
+                addView.style.display = "none";
+                historyView.style.display = "none";
+            }
+        }
+
+        async function loadDashboardSummary() {
+            const myAcc = getCookie(COOKIE_NAME);
+            if (!myAcc) return;
+
+            try {
+                const res = await fetch(`${API_PREFIX}/dashboard-summary`);
+                if (!res.ok) throw new Error("Błąd pobierania danych");
+
+                const data = await res.json();
+                const totals = data.totals || { "T": 0, "O": 0, "K": 0 };
+                const grandTotal = data.grand_total || 0;
+
+                const myTotal = totals[myAcc] || 0;
+                const myShare = grandTotal / 3.0;
+
+                document.getElementById("dash-grand-total").innerText = grandTotal.toFixed(2) + " PLN";
+                document.getElementById("dash-my-total").innerText = myTotal.toFixed(2) + " PLN";
+                document.getElementById("dash-my-share").innerText = myShare.toFixed(2) + " PLN";
+
+                const roommates = ["T", "O", "K"].filter(x => x !== myAcc);
+                const container = document.getElementById("settlement-cards-container");
+
+                container.innerHTML = roommates.map(roommate => {
+                    const roommateTotal = totals[roommate] || 0;
+                    const netOwedToRoommate = (roommateTotal - myTotal) / 3.0;
+
+                    let statusBoxHtml = "";
+                    if (netOwedToRoommate > 0.009) {
+                        statusBoxHtml = `
+                            <div class="settlement-box box-pay">
+                                <div style="font-weight:700; font-size:0.85rem;">💸 MUSISZ PRZELAĆ DLA ${roommate}:</div>
+                                <div class="settlement-amount">${netOwedToRoommate.toFixed(2)} PLN</div>
+                                <div class="settlement-explanation">
+                                    ${roommate} wydał(a) ${roommateTotal.toFixed(2)} PLN, Ty: ${myTotal.toFixed(2)} PLN.
+                                </div>
+                            </div>
+                        `;
+                    } else if (netOwedToRoommate < -0.009) {
+                        const roommateOwesMe = Math.abs(netOwedToRoommate);
+                        statusBoxHtml = `
+                            <div class="settlement-box box-receive">
+                                <div style="font-weight:700; font-size:0.85rem;">🎉 ${roommate} MA PRZELAĆ TOBIE:</div>
+                                <div class="settlement-amount">${roommateOwesMe.toFixed(2)} PLN</div>
+                                <div class="settlement-explanation">
+                                    Ty wydałeś(aś) ${myTotal.toFixed(2)} PLN, a ${roommate}: ${roommateTotal.toFixed(2)} PLN.
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        statusBoxHtml = `
+                            <div class="settlement-box box-even">
+                                <div style="font-weight:700; font-size:0.85rem;">✅ ROZLICZENI NA ZERO</div>
+                                <div class="settlement-amount">0.00 PLN</div>
+                                <div class="settlement-explanation">
+                                    Wydatki Twoje i ${roommate} są w pełni zbalansowane.
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="settlement-card">
+                            <div class="settlement-header">
+                                <div class="settlement-avatar avatar-${roommate}">${roommate}</div>
+                                <div>
+                                    <div class="settlement-name">Konto ${roommate}</div>
+                                    <div class="settlement-sub">Wydatki ${roommate}: ${roommateTotal.toFixed(2)} PLN</div>
+                                </div>
+                            </div>
+                            ${statusBoxHtml}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error("Dashboard error:", err);
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            selectedFile = file;
+            document.getElementById("selected-file-name").innerText = file.name;
+            document.getElementById("file-preview-bar").style.display = "flex";
+            document.getElementById("verification-section").style.display = "none";
+        }
+
+        function resetFileSelection() {
+            selectedFile = null;
+            document.getElementById("file-input-camera").value = "";
+            document.getElementById("file-input-gallery").value = "";
+            document.getElementById("file-preview-bar").style.display = "none";
+            document.getElementById("verification-section").style.display = "none";
+        }
+
+        async function analyzeReceipt() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            const loader = document.getElementById("analyze-loader");
+            const btnAnalyze = document.getElementById("btn-analyze");
+
+            btnAnalyze.disabled = true;
+            loader.style.display = "inline-block";
+
+            try {
+                const res = await fetch(`${API_PREFIX}/analizuj`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({ detail: res.statusText }));
+                    throw new Error(errData.detail || `Błąd serwera (${res.status})`);
+                }
+
+                const data = await res.json();
+                currentExtractedData = data;
+
+                renderVerificationList(data);
+                document.getElementById("verification-section").style.display = "flex";
+
+            } catch (err) {
+                alert("❌ " + err.message);
+            } finally {
+                btnAnalyze.disabled = false;
+                loader.style.display = "none";
+            }
+        }
+
+        function renderVerificationList(data) {
+            document.getElementById("store-name-input").value = data.store_name || "";
+            document.getElementById("purchase-date-input").value = data.date || "";
+
+            const container = document.getElementById("items-card-list");
+            container.innerHTML = (data.items || []).map((item, idx) => `
+                <div class="item-row-card checked" id="item-card-${idx}" onclick="toggleItemRow(${idx})">
+                    <div class="item-left">
+                        <input type="checkbox" class="item-checkbox-custom" id="cb-${idx}" data-index="${idx}" checked onclick="event.stopPropagation(); recalculateTotal(); updateItemCardStyle(${idx})">
+                        <div class="item-info">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-qty">Ilość: ${item.quantity || 1} szt.</span>
+                        </div>
+                    </div>
+                    <div class="item-price">${(item.total_price || 0).toFixed(2)} PLN</div>
+                </div>
+            `).join('');
+
+            recalculateTotal();
+        }
+
+        function toggleItemRow(idx) {
+            const cb = document.getElementById(`cb-${idx}`);
+            if (cb) {
+                cb.checked = !cb.checked;
+                updateItemCardStyle(idx);
+                recalculateTotal();
+            }
+        }
+
+        function updateItemCardStyle(idx) {
+            const cb = document.getElementById(`cb-${idx}`);
+            const card = document.getElementById(`item-card-${idx}`);
+            if (card && cb) {
+                if (cb.checked) {
+                    card.classList.add("checked");
+                    card.classList.remove("unchecked");
+                } else {
+                    card.classList.remove("checked");
+                    card.classList.add("unchecked");
+                }
+            }
+        }
+
+        function toggleAllItems() {
+            const checkboxes = document.querySelectorAll(".item-checkbox-custom");
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach((cb, idx) => {
+                cb.checked = !allChecked;
+                updateItemCardStyle(idx);
+            });
+            recalculateTotal();
+        }
+
+        function recalculateTotal() {
+            if (!currentExtractedData || !currentExtractedData.items) return;
+
+            const checkboxes = document.querySelectorAll(".item-checkbox-custom");
+            let sum = 0;
+            let count = 0;
+
+            checkboxes.forEach((cb, idx) => {
+                if (cb.checked) {
+                    sum += (currentExtractedData.items[idx].total_price || 0);
+                    count++;
+                }
+            });
+
+            document.getElementById("calculated-total-display").innerText = sum.toFixed(2) + " PLN";
+            document.getElementById("selected-count-label").innerText = `Zaznaczono ${count} z ${checkboxes.length} produktów`;
+        }
+
+        async function saveFinalReceipt() {
+            if (!currentExtractedData) return;
+
+            const checkboxes = document.querySelectorAll(".item-checkbox-custom");
+            const selectedItems = [];
+            let calculatedCost = 0;
+
+            checkboxes.forEach((cb, idx) => {
+                if (cb.checked) {
+                    const item = currentExtractedData.items[idx];
+                    selectedItems.push({
+                        name: item.name,
+                        quantity: item.quantity || 1.0,
+                        total_price: item.total_price || 0.0
+                    });
+                    calculatedCost += (item.total_price || 0.0);
+                }
+            });
+
+            if (selectedItems.length === 0) {
+                alert("Zaznacz co najmniej jedną pozycję!");
+                return;
+            }
+
+            const currentAccount = getCookie(COOKIE_NAME);
+            const payload = {
+                account: currentAccount,
+                store_name: document.getElementById("store-name-input").value,
+                purchase_date: document.getElementById("purchase-date-input").value,
+                picture_path: currentExtractedData.picture_path,
+                cost: calculatedCost,
+                items: selectedItems
+            };
+
+            const btnSave = document.getElementById("btn-save-final");
+            btnSave.disabled = true;
+
+            try {
+                const res = await fetch(`${API_PREFIX}/dodaj`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error("Błąd zapisu w bazie danych");
+
+                const result = await res.json();
+                alert(`✅ Zapisano wydatek!\nSuma z pozycji: ${result.saved_cost.toFixed(2)} PLN`);
+
+                resetFileSelection();
+                currentExtractedData = null;
+                switchTab('dash');
+
+            } catch (err) {
+                alert("❌ " + err.message);
+            } finally {
+                btnSave.disabled = false;
+            }
+        }
+
+        function setHistoryFilter(acc) {
+            activeHistoryFilter = acc;
+            document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+            const activeBtn = document.getElementById(`filter-${acc}`);
+            if (activeBtn) activeBtn.classList.add("active");
+
+            loadHistory();
+        }
+
+        async function loadHistory() {
+            const container = document.getElementById("history-cards-container");
+
+            try {
+                const res = await fetch(`${API_PREFIX}/historie?account=${activeHistoryFilter}`);
+                if (!res.ok) throw new Error("Błąd pobierania historii");
+
+                const data = await res.json();
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem 1rem;">Brak paragonów dla wybranego filtra.</div>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(r => `
+                    <div class="history-card" onclick="openDetails(${r.id})">
+                        <div class="history-card-header">
+                            <div>
+                                <div class="history-store">${r.store_name || 'Sklep bez nazwy'}</div>
+                                <div class="history-date">📅 ${r.purchase_date || 'Brak daty'} | 👤 <strong>Konto ${r.sender}</strong></div>
+                            </div>
+                            <div class="history-price">${(r.cost || 0).toFixed(2)} PLN</div>
+                        </div>
+
+                        <div class="history-meta">
+                            <span>📦 ${r.items_count} pozycji</span>
+                            <span style="color: var(--primary); font-weight: 700;">Szczegóły &rarr;</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                container.innerHTML = `<div style="grid-column: 1/-1; color: var(--accent-red);">❌ Nie udało się pobrać historii: ${err.message}</div>`;
+            }
+        }
+
+        async function openDetails(receiptId) {
+            const modal = document.getElementById("detail-modal");
+
+            try {
+                const res = await fetch(`${API_PREFIX}/rachunek/${receiptId}`);
+                if (!res.ok) throw new Error("Nie udało się pobrać danych paragonu");
+
+                const r = await res.json();
+
+                document.getElementById("modal-store-name").innerText = `${r.store_name || 'Sklep'} (Kupił(a): Konto ${r.sender})`;
+                document.getElementById("modal-date-info").innerText = `Data zakupu: ${r.purchase_date || 'Brak'} | Dodano: ${r.created_at || 'Brak'}`;
+                document.getElementById("modal-total-cost").innerText = (r.cost || 0).toFixed(2) + " PLN";
+
+                if (r.picture_path) {
+                    document.getElementById("modal-photo").src = r.picture_path;
+                    document.getElementById("modal-photo-container").style.display = "flex";
+                } else {
+                    document.getElementById("modal-photo-container").style.display = "none";
+                }
+
+                const listContainer = document.getElementById("modal-items-list");
+                listContainer.innerHTML = (r.items || []).map(item => `
+                    <div class="item-row-card checked" style="cursor: default;">
+                        <div class="item-left">
+                            <div class="item-info">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-qty">Ilość: ${item.quantity || 1} szt.</span>
+                            </div>
+                        </div>
+                        <div class="item-price">${(item.cost || 0).toFixed(2)} PLN</div>
+                    </div>
+                `).join('');
+
+                modal.style.display = "flex";
+
+            } catch (err) {
+                alert("❌ " + err.message);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("detail-modal").style.display = "none";
+        }
+
+        window.addEventListener("DOMContentLoaded", initApp);
+    </script>
+</body>
+</html>

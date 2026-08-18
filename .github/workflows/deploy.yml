@@ -1,0 +1,15 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Webhook
+        run: |
+          curl -X POST https://zarzadzca.tymczasowymail.pl/zmiana \
+               -H "X-Deploy-Token: ${{ secrets.DEPLOY_TOKEN }}" \
+               --fail

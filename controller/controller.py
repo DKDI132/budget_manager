@@ -6,6 +6,7 @@ from sqlalchemy import func
 from typing import List, Optional
 import os
 import uuid
+import hmac
 import logging
 import traceback
 from dotenv import load_dotenv
@@ -16,6 +17,7 @@ from slowapi import _rate_limit_exceeded_handler
 from config.database import get_db, init_db
 from config.security import APP_PASSWORD, create_jwt_token, verify_jwt_token
 from config.limiter import limiter, LOGIN_RATE_LIMIT, AI_RATE_LIMIT, DEFAULT_RATE_LIMIT
+from config.logger import get_logger
 from entity.rachunek import Rachunek
 from entity.elementy import Element
 from service.ai import analyze_receipt
@@ -23,11 +25,8 @@ from models import LoginRequest, ItemCreate, ReceiptSaveRequest
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
-logger = logging.getLogger("zarzadzca.controller")
+logger = get_logger("zarzadzca.controller")
+
 
 app = FastAPI(title="Zarządca Paragonów")
 app.state.limiter = limiter
@@ -69,7 +68,7 @@ async def root(request: Request):
 @router.post("/login")
 @limiter.limit(LOGIN_RATE_LIMIT)
 async def login(request: Request, payload: LoginRequest, response: Response):
-    if payload.password != APP_PASSWORD:
+    if not hmac.compare_digest(payload.password, APP_PASSWORD):
         logger.warning("❌ Nieudana próba logowania – błędne hasło.")
         raise HTTPException(status_code=401, detail="Nieprawidłowe hasło dostępu!")
 

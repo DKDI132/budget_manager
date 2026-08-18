@@ -7,11 +7,27 @@ from typing import Optional
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Request
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
+def get_real_ip(request: Request) -> str:
+    cf_ip = request.headers.get("CF-Connecting-IP")
+    if cf_ip:
+        return cf_ip.strip()
+    x_forwarded_for = request.headers.get("X-Forwarded-For")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0].strip()
+    return get_remote_address(request)
+
+limiter = Limiter(key_func=get_real_ip)
 app = FastAPI(title="Zarzadzca Updater")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
@@ -21,6 +37,8 @@ logger = logging.getLogger("zarzadca.updater")
 REPO_DIR = os.getenv("REPO_DIR", os.path.dirname(os.path.abspath(__file__)))
 SERVICE_NAME = os.getenv("SERVICE_NAME", "moja-apka.service")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("DEPLOY_TOKEN")
+UPDATE_RATE_LIMIT = os.getenv("RATE_LIMIT_UPDATE", "5/minute")
+
 
 
 def get_pip_executable() -> str:
@@ -57,7 +75,8 @@ def update_repository():
 
 
 @app.post("/zmiana", status_code=200)
-def zmiana(x_deploy_token: Optional[str] = Header(None, alias="X-Deploy-Token")):
+@limiter.limit(UPDATE_RATE_LIMIT)
+def zmiana(request: Request, x_deploy_token: Optional[str] = Header(None, alias="X-Deploy-Token")):
     if not GITHUB_TOKEN:
         logger.error("❌ Brak zmiennej GITHUB_TOKEN lub DEPLOY_TOKEN w pliku .env!")
         raise HTTPException(status_code=500, detail="Błąd serwera: brak skonfigurowanego tokenu wdrożenia")

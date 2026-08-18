@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger("zarzadca.updater")
 
 REPO_DIR = os.getenv("REPO_DIR", os.path.dirname(os.path.abspath(__file__)))
-SERVICE_NAME = os.getenv("SERVICE_NAME", "zarzadzca.service")
+SERVICE_NAME = os.getenv("SERVICE_NAME", "moja-apka.service")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("DEPLOY_TOKEN")
 
 

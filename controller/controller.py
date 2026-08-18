@@ -73,7 +73,7 @@ async def login(request: Request, payload: LoginRequest, response: Response):
         raise HTTPException(status_code=401, detail="Nieprawidłowe hasło dostępu!")
 
     token = create_jwt_token({"user": "home_user"})
-
+        
     response.set_cookie(
         key="auth_token",
         value=token,

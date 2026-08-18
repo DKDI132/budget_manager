@@ -1000,7 +1000,7 @@
 
         /* --- RESPONSIVE MEDIA QUERIES (MOBILE FIRST) --- */
         @media (max-width: 768px) {
-            body {
+            body.authenticated {
                 padding-bottom: calc(75px + var(--safe-bottom));
             }
 
@@ -1018,6 +1018,10 @@
             }
 
             .bottom-nav-mobile {
+                display: none;
+            }
+
+            body.authenticated .bottom-nav-mobile {
                 display: flex !important;
             }
 
@@ -1331,6 +1335,7 @@
     <script>
         const API_PREFIX = "";
         const COOKIE_NAME = "user_account";
+        let isAppAuthenticated = false;
         let currentExtractedData = null;
         let selectedFile = null;
         let activeHistoryFilter = "ALL";
@@ -1386,6 +1391,8 @@
             try {
                 await fetch(`${API_PREFIX}/logout`, { method: "POST" });
             } catch (e) {}
+            isAppAuthenticated = false;
+            document.body.classList.remove("authenticated");
             eraseCookie(COOKIE_NAME);
             initApp();
         }
@@ -1396,6 +1403,10 @@
         }
 
         function switchTab(tabName) {
+            if (!isAppAuthenticated) {
+                return;
+            }
+
             const dashView = document.getElementById("dashboard-view");
             const addView = document.getElementById("add-view");
             const historyView = document.getElementById("history-view");
@@ -1453,6 +1464,8 @@
 
                 const currentAccount = getCookie(COOKIE_NAME);
                 if (currentAccount) {
+                    isAppAuthenticated = true;
+                    document.body.classList.add("authenticated");
                     selectScreen.style.display = "none";
                     navTabsDesktop.style.display = "flex";
                     bottomNavMobile.style.display = "flex";
@@ -1463,6 +1476,8 @@
 
                     switchTab('dash');
                 } else {
+                    isAppAuthenticated = false;
+                    document.body.classList.remove("authenticated");
                     selectScreen.style.display = "flex";
                     navTabsDesktop.style.display = "none";
                     bottomNavMobile.style.display = "none";
@@ -1473,6 +1488,8 @@
                 }
 
             } catch (err) {
+                isAppAuthenticated = false;
+                document.body.classList.remove("authenticated");
                 passScreen.style.display = "flex";
                 selectScreen.style.display = "none";
                 navTabsDesktop.style.display = "none";

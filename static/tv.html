@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zarządca · TV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:           #0F0A06;
+            --surface:      #1C1208;
+            --surface-hi:   #261A0C;
+            --border:       #2D1E0F;
+            --primary:      #E8590C;
+            --primary-glow: rgba(232, 89, 12, 0.15);
+            --text:         #FFF8F3;
+            --text-muted:   #8B6F52;
+            --green:        #34D399;
+            --red:          #F87171;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           STAN 1 – EKRAN OCZEKIWANIA
+        ═══════════════════════════════════════════════════ */
+        #screen-idle {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 3rem 4rem;
+            gap: 2rem;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(232, 89, 12, 0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% 100%, rgba(249, 115, 22, 0.04) 0%, transparent 55%);
+        }
+
+        /* Górna belka ─────────────────── */
+        .tv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .tv-clock {
+            font-size: 5.5rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .tv-date {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .tv-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0.5;
+            margin-top: 6px;
+        }
+
+        .tv-logo-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #E8590C, #F97316);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .tv-logo-text { font-size: 1.2rem; font-weight: 800; color: var(--text-muted); }
+
+        /* Siatka kart ─────────────────── */
+        .tv-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tv-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem 2.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 0;
+        }
+
+        .tv-card-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+        }
+
+        /* Karta Budżet ─────────────────── */
+        .budget-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .budget-item { display: flex; flex-direction: column; gap: 5px; }
+
+        .budget-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .budget-val { font-size: 1.7rem; font-weight: 900; color: var(--text); }
+        .budget-val.orange { color: var(--primary); }
+
+        .budget-separator { height: 1px; background: var(--border); }
+
+        .budget-total-row { display: flex; flex-direction: column; gap: 5px; }
+
+        /* Karta Zakupy ─────────────────── */
+        .shopping-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .shopping-entry {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background: var(--surface-hi);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .shopping-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--primary); flex-shrink: 0;
+        }
+
+        .shopping-entry-name { flex: 1; }
+        .shopping-entry-acc  { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
+
+        .shopping-more {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            padding-top: 4px;
+        }
+
+        .shopping-empty {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 2.5rem 1rem;
+        }
+
+        /* Dolna belka ─────────────────── */
+        .tv-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--green);
+            animation: blink 2.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+        /* ═══════════════════════════════════════════════════
+           STAN 2 – ŁĄCZENIE
+        ═══════════════════════════════════════════════════ */
+        #screen-connecting {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%; height: 100%;
+            gap: 2.25rem;
+            background:
+                var(--bg)
+                radial-gradient(circle at center, rgba(232,89,12,0.1) 0%, transparent 65%);
+        }
+
+        .connecting-spinner {
+            width: 88px; height: 88px;
+            border: 5px solid rgba(232, 89, 12, 0.18);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .connecting-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .connecting-sub {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           STAN 3 – TRANSMISJA LIVE
+        ═══════════════════════════════════════════════════ */
+        #screen-streaming {
+            display: none;
+            width: 100%; height: 100%;
+            position: relative;
+            background: #000;
+        }
+
+        #remote-video {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .live-badge {
+            position: absolute;
+            top: 24px; right: 24px;
+            background: rgba(220, 38, 38, 0.92);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            backdrop-filter: blur(8px);
+            animation: badgeFade 0.5s ease 4s forwards;
+        }
+
+        @keyframes badgeFade { to { opacity: 0; pointer-events: none; } }
+
+        .live-badge-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: white;
+            animation: livepulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes livepulse { 0%,100% { transform: scale(1); } 50% { transform: scale(0.65); opacity: 0.6; } }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ STAN 1: Oczekiwanie ═══ -->
+    <div id="screen-idle">
+
+        <div class="tv-header">
+            <div>
+                <div class="tv-clock" id="tv-clock">00:00</div>
+                <div class="tv-date"  id="tv-date">Ładowanie...</div>
+            </div>
+            <div class="tv-logo">
+                <div class="tv-logo-icon">🧾</div>
+                <span class="tv-logo-text">Zarządca</span>
+            </div>
+        </div>
+
+        <div class="tv-content">
+
+            <!-- Podsumowanie wydatków -->
+            <div class="tv-card">
+                <div class="tv-card-title">💸 Podsumowanie wydatków</div>
+                <div class="budget-grid">
+                    <div class="budget-item">
+                        <div class="budget-label">Konto T</div>
+                        <div class="budget-val" id="tv-total-T">— PLN</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-label">Konto O</div>
+                        <div class="budget-val" id="tv-total-O">— PLN</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-label">Konto K</div>
+                        <div class="budget-val" id="tv-total-K">— PLN</div>
+                    </div>
+                </div>
+                <div class="budget-separator"></div>
+                <div class="budget-total-row">
+                    <div class="budget-label">Suma wszystkich</div>
+                    <div class="budget-val orange" id="tv-grand-total">— PLN</div>
+                </div>
+            </div>
+
+            <!-- Lista zakupów -->
+            <div class="tv-card">
+                <div class="tv-card-title">🛒 Do kupienia</div>
+                <div class="shopping-list" id="tv-shopping-list">
+                    <div class="shopping-empty">Ładowanie listy zakupów...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tv-footer">
+            <div class="status-dot"></div>
+            <span id="tv-footer-status">Gotowy do transmisji · Wejdź na panel domowy i kliknij „Transmituj"</span>
+        </div>
+    </div>
+
+    <!-- ═══ STAN 2: Łączenie ═══ -->
+    <div id="screen-connecting">
+        <div class="connecting-spinner"></div>
+        <div class="connecting-title">Nawiązywanie połączenia...</div>
+        <div class="connecting-sub" id="connecting-user">Konto ? · Przełączanie wejścia HDMI</div>
+    </div>
+
+    <!-- ═══ STAN 3: Transmisja live ═══ -->
+    <div id="screen-streaming">
+        <video id="remote-video" autoplay playsinline></video>
+        <div class="live-badge" id="live-badge">
+            <div class="live-badge-dot"></div>
+            <span id="live-badge-text">🔴 Na żywo</span>
+        </div>
+    </div>
+
+    <script>
+        // ─── Konfiguracja ─────────────────────────────────────────────────────
+        // Zmień na właściwy adres swojego serwera
+        const WS_URL   = 'wss://zarzadzca.tymczasowymail.pl/ws/stream';
+        const ICE_CFG  = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        let ws = null;
+        let pc = null;  // RTCPeerConnection
+
+        // ─── Zegar ────────────────────────────────────────────────────────────
+        const DAYS   = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+        const MONTHS = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('tv-clock').textContent =
+                String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+            document.getElementById('tv-date').textContent =
+                `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ─── Przełączanie stanów ──────────────────────────────────────────────
+        function showScreen(name) {
+            document.getElementById('screen-idle').style.display       = 'none';
+            document.getElementById('screen-connecting').style.display = 'none';
+            document.getElementById('screen-streaming').style.display  = 'none';
+
+            const el = document.getElementById(`screen-${name}`);
+            if (el) el.style.display = (name === 'streaming') ? 'block' : 'flex';
+        }
+
+        let tvPingInterval = null;
+
+        // ─── WebSocket + Sygnalizacja WebRTC ─────────────────────────────────
+        function connect() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                // Zarejestruj się jako ekran telewizora
+                ws.send(JSON.stringify({ type: 'register', role: 'tv' }));
+
+                // Wysyłaj pingi co 30 sekund aby Cloudflare/router nie zrywał połączenia
+                if (tvPingInterval) clearInterval(tvPingInterval);
+                tvPingInterval = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 30000);
+            };
+
+            ws.onclose = () => {
+                if (tvPingInterval) {
+                    clearInterval(tvPingInterval);
+                    tvPingInterval = null;
+                }
+                // Auto-reconnect po 5 sekundach
+                setTimeout(connect, 5000);
+            };
+
+            ws.onerror = () => ws.close();
+
+            ws.onmessage = async (event) => {
+                let msg;
+                try { msg = JSON.parse(event.data); } catch { return; }
+
+                switch (msg.type) {
+
+                    case 'data':
+                        // Serwer pcha dane dashboardu i listy zakupów przy rejestracji TV
+                        if (msg.dashboard) updateDashboard(msg.dashboard);
+                        if (msg.shopping)  updateShopping(msg.shopping);
+                        break;
+
+                    case 'status':
+                        // Globalny status streamu
+                        if (!msg.busy) {
+                            if (pc) { pc.close(); pc = null; }
+                            const video = document.getElementById('remote-video');
+                            video.srcObject = null;
+                            showScreen('idle');
+                            setFooter("Gotowy do transmisji · Wejdź na panel domowy i kliknij „Transmituj"");
+                        }
+                        break;
+
+                    case 'offer':
+                        // Domownik wysłał ofertę SDP – przyjmujemy stream
+                        document.getElementById('connecting-user').textContent =
+                            `Konto ${msg.user || '?'} · Przełączanie wejścia HDMI`;
+                        showScreen('connecting');
+
+                        // Wyczyść poprzednie połączenie jeśli istnieje
+                        if (pc) { pc.close(); pc = null; }
+
+                        pc = new RTCPeerConnection(ICE_CFG);
+
+                        pc.ontrack = ({ streams }) => {
+                            if (!streams || !streams[0]) return;
+                            const video = document.getElementById('remote-video');
+                            video.srcObject = streams[0];
+                            video.onloadedmetadata = () => {
+                                document.getElementById('live-badge-text').textContent =
+                                    `🔴 Konto ${msg.user || '?'} na żywo`;
+                                // Resetuj animację badge'a (usuń i dodaj element ponownie)
+                                const badge = document.getElementById('live-badge');
+                                badge.style.animation = 'none';
+                                badge.offsetHeight; // reflow
+                                badge.style.animation = '';
+                                showScreen('streaming');
+                            };
+                        };
+
+                        pc.onicecandidate = ({ candidate }) => {
+                            if (candidate) ws.send(JSON.stringify({ type: 'ice', candidate }));
+                        };
+
+                        pc.onconnectionstatechange = () => {
+                            if (pc && (pc.connectionState === 'failed' || pc.connectionState === 'disconnected')) {
+                                pc.close(); pc = null;
+                                document.getElementById('remote-video').srcObject = null;
+                                showScreen('idle');
+                            }
+                        };
+
+                        await pc.setRemoteDescription({ type: 'offer', sdp: msg.sdp });
+                        const answer = await pc.createAnswer();
+                        await pc.setLocalDescription(answer);
+                        ws.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
+                        break;
+
+                    case 'ice':
+                        // Kandydat ICE od nadawcy
+                        if (pc && msg.candidate) {
+                            try { await pc.addIceCandidate(msg.candidate); } catch {}
+                        }
+                        break;
+
+                    case 'stream_ended':
+                        // Nadawca zakończył stream
+                        if (pc) { pc.close(); pc = null; }
+                        document.getElementById('remote-video').srcObject = null;
+                        showScreen('idle');
+                        setFooter("Transmisja zakończona · Gotowy na następne połączenie");
+                        break;
+                }
+            };
+        }
+
+        // ─── Aktualizacja danych na ekranie idle ─────────────────────────────
+        function updateDashboard(data) {
+            const totals = data.totals || { T: 0, O: 0, K: 0 };
+            const fmt = v => `${Math.round(parseFloat(v || 0))} PLN`;
+            document.getElementById('tv-total-T').textContent     = fmt(totals.T);
+            document.getElementById('tv-total-O').textContent     = fmt(totals.O);
+            document.getElementById('tv-total-K').textContent     = fmt(totals.K);
+            document.getElementById('tv-grand-total').textContent = fmt(data.grand_total);
+        }
+
+        function updateShopping(items) {
+            const list   = document.getElementById('tv-shopping-list');
+            const active = (items || []).filter(i => !i.is_completed);
+
+            if (!active.length) {
+                list.innerHTML = '<div class="shopping-empty">✓ Nic do kupienia · lista pusta</div>';
+                return;
+            }
+
+            const visible = active.slice(0, 8);
+            const rest    = active.length - visible.length;
+
+            list.innerHTML = visible.map(item => `
+                <div class="shopping-entry">
+                    <div class="shopping-dot"></div>
+                    <span class="shopping-entry-name">${esc(item.item_name)}</span>
+                    <span class="shopping-entry-acc">[${esc(item.added_by)}]</span>
+                </div>
+            `).join('') + (rest > 0 ? `<div class="shopping-more">... i jeszcze ${rest} więcej</div>` : '');
+        }
+
+        function setFooter(msg) {
+            document.getElementById('tv-footer-status').textContent = msg;
+        }
+
+        function esc(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        // ─── Start ────────────────────────────────────────────────────────────
+        showScreen('idle');
+        connect();
+    </script>
+</body>
+</html>

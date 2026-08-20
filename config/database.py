@@ -1,39 +1,42 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, event
+from sqlalchemy import event, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase
 
 load_dotenv()
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./zarzadzca.db")
+_raw_url = os.environ.get("DATABASE_URL", "sqlite:///./zarzadzca.db")
+DATABASE_URL = _raw_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
 
-engine = create_engine(
+engine = create_async_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
+    echo=False,
 )
 
-if "sqlite" in DATABASE_URL:
-    @event.listens_for(Engine, "connect")
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.execute("PRAGMA journal_mode=WAL")
-        cursor.close()
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False,
+)
 
 
 class Base(DeclarativeBase):
     pass
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-def init_db():
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+async def init_db():
     import entity
-    Base.metadata.create_all(bind=engine)
+    async with engine.begin() as conn:
+        await conn.execute(text("PRAGMA foreign_keys=ON"))
+        await conn.execute(text("PRAGMA journal_mode=WAL"))
+        await conn.run_sync(Base.metadata.create_all)

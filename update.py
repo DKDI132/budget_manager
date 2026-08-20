@@ -24,7 +24,7 @@ def get_real_ip(request: Request) -> str:
     return get_remote_address(request)
 
 limiter = Limiter(key_func=get_real_ip)
-app = FastAPI(title="Zarzadzca Updater")
+app = FastAPI(title="Zarzadzca Updater",docs_url=None,redoc_url=None)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 

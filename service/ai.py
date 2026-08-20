@@ -7,7 +7,7 @@ from google.genai import types
 from PIL import Image, ImageOps
 from dotenv import load_dotenv
 
-from models.receipt import Item, ReceiptData
+from dto.receipt import Item, ReceiptData
 from config.logger import get_logger
 
 load_dotenv()

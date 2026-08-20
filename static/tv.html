@@ -359,12 +359,31 @@
 
     <script>
         // ─── Konfiguracja ─────────────────────────────────────────────────────
-        // Zmień na właściwy adres swojego serwera
-        const WS_URL   = 'wss://zarzadzca.tymczasowymail.pl/ws/stream';
+        const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const WS_URL      = `${WS_PROTOCOL}://${window.location.host}/ws/stream`;
         const ICE_CFG  = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
         let ws = null;
         let pc = null;  // RTCPeerConnection
+        let tvPingInterval = null;
+
+        // ─── Pobieranie danych (HTTP Polling) ─────────────────────────────────
+        async function fetchTvData() {
+            try {
+                const res = await fetch("/api/tv/data");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.dashboard) updateDashboard(data.dashboard);
+                    if (data.shopping)  updateShopping(data.shopping);
+                }
+            } catch (err) {
+                console.error("Błąd pobierania danych TV:", err);
+            }
+        }
+
+        // Odpytuj serwer co 10 sekund
+        setInterval(fetchTvData, 10000);
+        fetchTvData(); // wywołaj od razu przy starcie
 
         // ─── Zegar ────────────────────────────────────────────────────────────
         const DAYS   = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
@@ -390,8 +409,6 @@
             const el = document.getElementById(`screen-${name}`);
             if (el) el.style.display = (name === 'streaming') ? 'block' : 'flex';
         }
-
-        let tvPingInterval = null;
 
         // ─── WebSocket + Sygnalizacja WebRTC ─────────────────────────────────
         function connect() {
@@ -440,7 +457,7 @@
                             const video = document.getElementById('remote-video');
                             video.srcObject = null;
                             showScreen('idle');
-                            setFooter("Gotowy do transmisji · Wejdź na panel domowy i kliknij „Transmituj"");
+                            setFooter("Gotowy do transmisji · Wejdź na panel domowy i kliknij 'Transmituj'");
                         }
                         break;
 

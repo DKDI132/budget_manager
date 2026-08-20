@@ -1053,7 +1053,6 @@
                     document.getElementById("nav-account-name").innerText = `Konto ${acc}`;
                     document.getElementById("nav-avatar").innerText = acc;
                     switchTab('dash');
-                    connectStatusWebSocket();
                 } else {
                     isAppAuthenticated = false;
                     document.body.classList.remove("authenticated");
@@ -1134,6 +1133,16 @@
                     }
                     return `<div class="settlement-card"><div class="settlement-header"><div class="settlement-avatar avatar-${r}">${r}</div><div><div class="settlement-name">Konto ${r}</div><div class="settlement-sub">Wydatki ${r}: ${rt.toFixed(2)} PLN</div></div></div>${box}</div>`;
                 }).join('');
+
+                // Pobranie statusu TV z serwera HTTP
+                try {
+                    const resStatus = await fetch(`${API_PREFIX}/api/tv/status`);
+                    if (resStatus.ok) {
+                        const statusData = await resStatus.json();
+                        tvStatus = { busy: statusData.busy, user: statusData.user };
+                        updateTvBanner();
+                    }
+                } catch (e) {}
             } catch (err) { console.error("Dashboard error:", err); }
         }
 
@@ -1419,35 +1428,40 @@
         // ─── TV / WebRTC ──────────────────────────────────────────────────────
         let streamWsPingInterval = null;
 
-        function connectStatusWebSocket() {
-            if (streamWs && streamWs.readyState < 2) return;
-            streamWs = new WebSocket(WS_URL);
-
-            streamWs.onopen = () => {
-                streamWs.send(JSON.stringify({ type: "register", role: "viewer" }));
-                
-                // Uruchomienie wysyłania pingów co 30 sekund
-                if (streamWsPingInterval) clearInterval(streamWsPingInterval);
-                streamWsPingInterval = setInterval(() => {
-                    if (streamWs && streamWs.readyState === WebSocket.OPEN) {
-                        streamWs.send(JSON.stringify({ type: "ping" }));
-                    }
-                }, 30000);
-            };
-
-            streamWs.onmessage = (event) => {
-                try { handleWsMessage(JSON.parse(event.data)); } catch (e) {}
-            };
-
-            streamWs.onclose = () => {
-                if (streamWsPingInterval) {
-                    clearInterval(streamWsPingInterval);
-                    streamWsPingInterval = null;
+        function connectStreamWebsocket() {
+            return new Promise((resolve, reject) => {
+                if (streamWs && streamWs.readyState === WebSocket.OPEN) {
+                    resolve();
+                    return;
                 }
-                if (isAppAuthenticated) setTimeout(connectStatusWebSocket, 5000);
-            };
+                streamWs = new WebSocket(WS_URL);
 
-            streamWs.onerror = () => streamWs.close();
+                streamWs.onopen = () => {
+                    if (streamWsPingInterval) clearInterval(streamWsPingInterval);
+                    streamWsPingInterval = setInterval(() => {
+                        if (streamWs && streamWs.readyState === WebSocket.OPEN) {
+                            streamWs.send(JSON.stringify({ type: "ping" }));
+                        }
+                    }, 30000);
+                    resolve();
+                };
+
+                streamWs.onmessage = (event) => {
+                    try { handleWsMessage(JSON.parse(event.data)); } catch (e) {}
+                };
+
+                streamWs.onclose = () => {
+                    if (streamWsPingInterval) {
+                        clearInterval(streamWsPingInterval);
+                        streamWsPingInterval = null;
+                    }
+                };
+
+                streamWs.onerror = (err) => {
+                    reject(err);
+                    streamWs.close();
+                };
+            });
         }
 
         async function handleWsMessage(msg) {
@@ -1486,7 +1500,7 @@
                 btn.disabled = false;
             } else if (tvStatus.busy) {
                 banner.classList.add("tv-busy");
-                statusLine.textContent = `🔴 Konto ${tvStatus.user} korzysta z TV`;
+                statusLine.textContent = `🔴 Konto ${tvStatus.user || 'Inny domownik'} korzysta z TV`;
                 btn.className = "btn-tv btn-tv-busy";
                 btn.textContent = "⛔ Zajęty";
                 btn.disabled = true;
@@ -1506,13 +1520,23 @@
 
         async function startScreenShare() {
             try {
+                await connectStreamWebsocket();
+            } catch (err) {
+                alert("❌ Nie udało się połączyć z serwerem TV.");
+                return;
+            }
+
+            try {
                 localStream = await navigator.mediaDevices.getDisplayMedia({
                     video: { frameRate: { ideal: 60, max: 60 }, width: { ideal: 1920 }, height: { ideal: 1080 } },
                     audio: { echoCancellation: false, noiseSuppression: false }
                 });
-            } catch (err) { localStream = null; return; }
+            } catch (err) { 
+                localStream = null; 
+                if (streamWs) { streamWs.close(); streamWs = null; }
+                return; 
+            }
 
-            // Gdy użytkownik kliknie Stop w systemowym UI przeglądarki
             localStream.getVideoTracks()[0].onended = () => stopScreenShare();
 
             peerConnection = new RTCPeerConnection(ICE_CONFIG);
@@ -1542,7 +1566,10 @@
             streamStartTime = null;
             if (streamWs?.readyState === 1) {
                 streamWs.send(JSON.stringify({ type: "stop" }));
-                streamWs.send(JSON.stringify({ type: "register", role: "viewer" }));
+            }
+            if (streamWs) {
+                streamWs.close();
+                streamWs = null;
             }
             updateTvBanner();
         }

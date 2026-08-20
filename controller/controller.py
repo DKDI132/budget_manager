@@ -356,5 +356,57 @@ async def usun_z_zakupow(
     return {"status": "ok", "message": "Usunięto"}
 
 
+@router.get("/tv")
+async def pobierz_strone_tv(request: Request):
+    if request.client.host not in ("127.0.0.1", "localhost", "::1"):
+        raise HTTPException(status_code=403, detail="Dostęp zabroniony")
+    return FileResponse("static/tv.html")
+
+
+@router.get("/api/tv/data")
+async def pobierz_dane_dla_tv(request: Request, db: AsyncSession = Depends(get_db)):
+    if request.client.host not in ("127.0.0.1", "localhost", "::1"):
+        raise HTTPException(status_code=403, detail="Dostęp zabroniony")
+        
+    result = await db.execute(
+        select(Rachunek.sender, func.sum(Rachunek.cost)).group_by(Rachunek.sender)
+    )
+    rows = result.all()
+    totals = {"T": 0.0, "O": 0.0, "K": 0.0}
+    for sender, sum_cost in rows:
+        if sender in totals and sum_cost:
+            totals[sender] = float(sum_cost)
+    dashboard_data = {"totals": totals, "grand_total": sum(totals.values())}
+
+    stmt = select(ProduktDoZakupu).order_by(ProduktDoZakupu.is_completed.asc(), ProduktDoZakupu.created_at.desc())
+    result_shop = await db.execute(stmt)
+    shopping_items = result_shop.scalars().all()
+    shopping_data = [
+        {
+            "id": item.id,
+            "item_name": item.item_name,
+            "added_by": item.added_by,
+            "is_completed": item.is_completed,
+            "completed_in_store": item.completed_in_store,
+            "completed_date": item.completed_date
+        }
+        for item in shopping_items
+    ]
+
+    return {
+        "dashboard": dashboard_data,
+        "shopping": shopping_data
+    }
+
+
+@router.get("/api/tv/status")
+async def pobierz_status_tv(request: Request, auth=Depends(require_auth)):
+    manager = request.app.state.tv_manager
+    return {
+        "busy": manager.used,
+        "user": "Inny domownik" if manager.used else None
+    }
+
+
 app.include_router(router)
 app.include_router(ws_router)
